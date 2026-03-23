@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23162240'/><path d='M8 22 L12 12 L16 18 L20 8 L24 14' stroke='%23E8C230' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='12' cy='12' r='2' fill='%233B6FD4'/><circle cx='16' cy='18' r='2' fill='%233B6FD4'/><circle cx='20' cy='8' r='2' fill='%233B6FD4'/></svg>">
+<meta property="og:image" content="https://capsule-render.vercel.app/api?type=rect&color=162240&height=200&text=Calgary%20Data%20Portfolio&fontSize=30&fontColor=E8C230&desc=Ola%20K.&descColor=3B6FD4">
+<title>Geospatial demand forecast — Calgary data portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #162240;
+  --bg-elevated: #1D2D52;
+  --bg-card: #243868;
+  --border: #385588;
+  --border-hover: #4A6CAA;
+  --text: #EDE9E2;
+  --text-muted: #A0A8BC;
+  --text-dim: #6A7590;
+  --navy: #3B6FD4;
+  --navy-bright: #5588EE;
+  --gold: #E8C230;
+  --gold-dim: rgba(232,194,48,0.18);
+}
+
+[data-theme="light"] {
+  --bg: #F4F1EC;
+  --bg-elevated: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --border: #D4CFC6;
+  --border-hover: #B0A998;
+  --text: #1A1A1A;
+  --text-muted: #5A5A5A;
+  --text-dim: #8A8A8A;
+  --navy: #3B6FD4;
+  --navy-bright: #2A5BC0;
+  --gold: #C4A020;
+  --gold-dim: rgba(196,160,32,0.14);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+}
+nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+nav a:hover { color: var(--gold); }
+.nav-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-muted);
+  padding: 0.35rem 0.65rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.theme-toggle:hover { border-color: var(--border-hover); color: var(--text); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+.fade-up:nth-child(2) { animation-delay: 0.08s; }
+.fade-up:nth-child(3) { animation-delay: 0.16s; }
+.fade-up:nth-child(4) { animation-delay: 0.24s; }
+
+.hero { padding: 4rem 0 3rem; position: relative; }
+.hero-number {
+  font-family: 'Instrument Serif', serif;
+  font-size: 7rem;
+  color: var(--text-dim);
+  opacity: 0.18;
+  line-height: 1;
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+}
+.hero h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+  max-width: 600px;
+}
+.hero-desc {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 540px;
+  margin-bottom: 1.5rem;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.tag--gold { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.tag--navy { border-color: var(--navy); color: var(--navy-bright); }
+.hero-metric {
+  display: inline-block;
+  padding: 1.25rem 2rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg-elevated);
+}
+.hero-metric-value {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.6rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.hero-metric-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+  letter-spacing: 0.03em;
+}
+
+section { padding: 3rem 0; border-top: 1px solid var(--border); }
+section h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.7rem;
+  font-weight: 400;
+  margin-bottom: 0.4rem;
+}
+section .section-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+.app-card {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg-elevated);
+  padding: 1.25rem;
+  transition: border-color 0.2s;
+}
+.app-card:hover { border-color: var(--border-hover); }
+.app-card-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--gold);
+  letter-spacing: 0.03em;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+.app-card ul { list-style: none; margin-bottom: 1rem; }
+.app-card li {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 0.15rem 0;
+}
+.app-card li::before {
+  content: '\2014\00a0';
+  color: var(--text-dim);
+}
+
+.mock-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 56px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.mock-bar {
+  flex: 1;
+  border-radius: 1px 1px 0 0;
+  min-width: 6px;
+}
+.mock-bar--navy { background: var(--navy); }
+.mock-bar--gold { background: var(--gold); }
+.mock-bar--dim { background: var(--text-dim); opacity: 0.5; }
+
+.mock-heatmap {
+  height: 56px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+}
+.mock-heatmap-cell {
+  border-radius: 1px;
+  min-width: 4px;
+}
+
+.mock-line {
+  height: 56px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.mock-line svg { position: absolute; bottom: 6px; left: 6px; }
+
+.btn-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 0.65rem 1.5rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.btn--gold {
+  background: var(--gold);
+  color: #162240;
+  border-color: var(--gold);
+}
+.btn--gold:hover { background: #D4B02A; }
+.btn--outline {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.btn--outline:hover { border-color: var(--border-hover); color: var(--text); }
+.code-block {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.5rem;
+  color: var(--text-muted);
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.7;
+}
+.code-block .prompt { color: var(--gold); }
+
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.metric-card {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1.25rem;
+  background: var(--bg-elevated);
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.metric-card:hover { border-color: var(--border-hover); }
+.metric-value {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2rem;
+  color: var(--gold);
+  line-height: 1.1;
+}
+.metric-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 0.35rem;
+  letter-spacing: 0.03em;
+}
+
+.method-text {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  max-width: 640px;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  position: relative;
+}
+.pipeline::before {
+  content: '';
+  position: absolute;
+  top: 1.4rem;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: var(--border);
+}
+.pipeline-step { text-align: center; position: relative; }
+.pipeline-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--navy);
+  border: 2px solid var(--bg);
+  border-radius: 50%;
+  margin: 0 auto 0.6rem;
+  position: relative;
+  z-index: 1;
+}
+.pipeline-step:last-child .pipeline-dot { background: var(--gold); }
+.pipeline-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.pipeline-detail {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+.links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--bg-elevated);
+  transition: border-color 0.2s;
+}
+.link-card:hover { border-color: var(--border-hover); }
+.link-icon {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--navy-bright);
+  flex-shrink: 0;
+  width: 2rem;
+  text-align: center;
+}
+.link-text-title {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.link-text-sub {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 0;
+  margin-top: 1rem;
+  text-align: center;
+}
+footer p {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+footer a { color: var(--text-muted); text-decoration: none; }
+footer a:hover { color: var(--gold); }
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2rem; }
+  .hero-number { font-size: 4.5rem; }
+  .app-grid { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .pipeline { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  .pipeline::before { display: none; }
+  .links-grid { grid-template-columns: 1fr; }
+  nav { flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.7rem; }
+  .hero-number { font-size: 3.5rem; top: 1rem; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .pipeline { grid-template-columns: 1fr; }
+}
+
+@media print {
+  body { background: #fff; color: #111; }
+  body::before { display: none; }
+  nav, .theme-toggle, .btn-row, .code-block { display: none; }
+  .hero-number { opacity: 0.08; }
+  section { border-top-color: #ccc; }
+  .app-card, .metric-card, .link-card {
+    border-color: #ccc;
+    background: #fafafa;
+  }
+  .hero-metric-value, .metric-value { color: #333; }
+  .mock-bars, .mock-heatmap, .mock-line {
+    border-color: #ccc;
+    background: #f5f5f5;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<nav class="fade-up">
+  <a href="https://guydev42.github.io/calgary-data-portfolio/">Back to portfolio</a>
+  <span class="nav-title">Geospatial demand forecast</span>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">Light</button>
+</nav>
+
+<header class="hero fade-up">
+  <span class="hero-number">23</span>
+  <h1>Geospatial demand forecast</h1>
+  <p class="hero-desc">A ride demand forecasting pipeline using LightGBM with spatial cross-validation and cyclical temporal encoding, trained on 20K records across 30 Calgary neighborhoods.</p>
+  <div class="tags">
+    <span class="tag tag--gold">Demand forecasting</span>
+    <span class="tag tag--gold">LightGBM</span>
+    <span class="tag tag--navy">Spatial CV</span>
+    <span class="tag tag--navy">Cyclical encoding</span>
+    <span class="tag">Geospatial</span>
+    <span class="tag">Regression</span>
+  </div>
+  <div class="hero-metric">
+    <div class="hero-metric-value">0.85</div>
+    <div class="hero-metric-label">R-squared, best model (LightGBM)</div>
+  </div>
+</header>
+
+<!-- App preview -->
+<section class="fade-up">
+  <h2>Interactive dashboard</h2>
+  <p class="section-sub">Five-page Streamlit application for demand visualization and zone-level forecasting</p>
+  <div class="app-grid">
+
+    <div class="app-card">
+      <div class="app-card-name">Demand heatmap</div>
+      <ul>
+        <li>Mapbox scatter of predicted demand by zone</li>
+        <li>Hour-of-day slider for temporal exploration</li>
+        <li>Demand distribution across all hours</li>
+      </ul>
+      <div class="mock-heatmap">
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.3"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.5"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.7"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.9"></div>
+        <div class="mock-heatmap-cell" style="background:#ef4444;opacity:0.8"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.6"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.4"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.2"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.4"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.6"></div>
+        <div class="mock-heatmap-cell" style="background:#ef4444;opacity:0.9"></div>
+        <div class="mock-heatmap-cell" style="background:#ef4444;opacity:0.7"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.8"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.5"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.3"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.2"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.2"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.3"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.5"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.7"></div>
+        <div class="mock-heatmap-cell" style="background:var(--gold);opacity:0.6"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.5"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.3"></div>
+        <div class="mock-heatmap-cell" style="background:var(--navy);opacity:0.2"></div>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-name">Zone forecast timeline</div>
+      <ul>
+        <li>24-hour demand profile per zone</li>
+        <li>Confidence band (+/- 1 std)</li>
+        <li>Day-of-week demand patterns</li>
+      </ul>
+      <div class="mock-line">
+        <svg width="90%" height="36" viewBox="0 0 200 36">
+          <polyline points="0,30 25,28 50,18 75,8 100,12 125,6 150,14 175,22 200,28" fill="none" stroke="var(--gold)" stroke-width="2"/>
+          <polyline points="0,32 25,30 50,22 75,14 100,16 125,12 150,18 175,26 200,30" fill="none" stroke="var(--navy)" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-name">Feature importance</div>
+      <ul>
+        <li>LightGBM feature importance rankings</li>
+        <li>Pearson correlation with demand target</li>
+        <li>Spatial vs temporal feature analysis</li>
+      </ul>
+      <div class="mock-bars">
+        <div class="mock-bar mock-bar--gold" style="height:95%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:80%"></div>
+        <div class="mock-bar mock-bar--navy" style="height:65%"></div>
+        <div class="mock-bar mock-bar--navy" style="height:55%"></div>
+        <div class="mock-bar mock-bar--dim" style="height:40%"></div>
+        <div class="mock-bar mock-bar--dim" style="height:30%"></div>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-name">Peak demand alerts</div>
+      <ul>
+        <li>Configurable demand threshold alerts</li>
+        <li>Zone-hour heatmap for peak identification</li>
+        <li>Top alert table with affected zones</li>
+      </ul>
+      <div class="mock-bars">
+        <div class="mock-bar mock-bar--dim" style="height:30%"></div>
+        <div class="mock-bar mock-bar--navy" style="height:50%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:75%"></div>
+        <div class="mock-bar" style="height:90%;background:#ef4444"></div>
+        <div class="mock-bar mock-bar--gold" style="height:70%"></div>
+        <div class="mock-bar mock-bar--navy" style="height:45%"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="code-block"><span class="prompt">$</span> pip install -r requirements.txt && streamlit run app.py</div>
+</section>
+
+<!-- Key results -->
+<section class="fade-up">
+  <h2>Key results</h2>
+  <p class="section-sub">LightGBM with spatial features and cyclical encoding on 20K ride demand records</p>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value">0.85</div>
+      <div class="metric-label">R-squared</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">4.2</div>
+      <div class="metric-label">MAE (rides/zone/hour)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">5.8</div>
+      <div class="metric-label">RMSE</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">30</div>
+      <div class="metric-label">Calgary zones</div>
+    </div>
+  </div>
+</section>
+
+<!-- Methodology -->
+<section class="fade-up">
+  <h2>Methodology</h2>
+  <p class="method-text">
+    Synthetic ride demand data (20K records) across 30 Calgary neighborhoods with features covering geographic coordinates, temporal patterns, weather conditions, and local infrastructure. Spatial features include haversine distance to downtown and KMeans zone clusters. Temporal features use cyclical sine/cosine encoding for hour, day, and month to preserve circular relationships. Four regressors (Ridge, Random Forest, XGBoost, LightGBM) are compared with 5-fold cross-validation. Leave-one-zone-out spatial CV validates generalization to unseen geographic areas.
+  </p>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Data + features</div>
+      <div class="pipeline-detail">20K records, 30 zones</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Spatial encoding</div>
+      <div class="pipeline-detail">Distance, KMeans clusters</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Model training</div>
+      <div class="pipeline-detail">Ridge, RF, XGB, LGBM</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Spatial CV</div>
+      <div class="pipeline-detail">Leave-one-zone-out</div>
+    </div>
+  </div>
+</section>
+
+<!-- How to run -->
+<section class="fade-up">
+  <h2>How to run</h2>
+  <div class="code-block"><span class="prompt">$</span> git clone https://github.com/guydev42/calgary-data-portfolio.git
+<span class="prompt">$</span> cd calgary-data-portfolio/project_23_geospatial_demand_forecast
+<span class="prompt">$</span> pip install -r requirements.txt
+<span class="prompt">$</span> python data/generate_data.py
+<span class="prompt">$</span> streamlit run app.py</div>
+</section>
+
+<!-- Data source -->
+<section class="fade-up">
+  <h2>Data source</h2>
+  <p class="method-text">
+    Synthetic ride demand data generated with realistic distributions based on Calgary geography. The 30 neighborhoods use real centroid coordinates, and demand patterns are shaped by distance to downtown, population density, restaurant and transit infrastructure, hourly rush cycles, weather conditions, and event proximity. Calgary's seasonal climate (cold winters, warm summers) influences both temperature distributions and seasonal demand multipliers.
+  </p>
+</section>
+
+<!-- Links -->
+<section class="fade-up">
+  <h2>Links</h2>
+  <div class="links-grid">
+    <a href="https://github.com/guydev42/calgary-data-portfolio" class="link-card" target="_blank" rel="noopener">
+      <span class="link-icon">{}</span>
+      <div>
+        <div class="link-text-title">View code on GitHub</div>
+        <div class="link-text-sub">Source, notebooks, and demand data</div>
+      </div>
+    </a>
+    <a href="notebooks/01_eda.ipynb" class="link-card">
+      <span class="link-icon">nb</span>
+      <div>
+        <div class="link-text-title">View notebooks</div>
+        <div class="link-text-sub">EDA, feature engineering, modeling, spatial CV</div>
+      </div>
+    </a>
+    <a href="https://guydev42.github.io/calgary-data-portfolio/" class="link-card">
+      <span class="link-icon">&larr;</span>
+      <div>
+        <div class="link-text-title">Back to portfolio</div>
+        <div class="link-text-sub">All projects</div>
+      </div>
+    </a>
+    <a href="https://guydev42.github.io/calgary-data-portfolio/" class="link-card">
+      <span class="link-icon">&nearr;</span>
+      <div>
+        <div class="link-text-title">Calgary data portfolio</div>
+        <div class="link-text-sub">Full project collection</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p>Part of the <a href="https://guydev42.github.io/calgary-data-portfolio/" style="color:var(--gold,#E8C230);text-decoration:none;border-bottom:1px solid">Calgary data portfolio</a>. Data: Synthetic ride demand based on Calgary geography.</p>
+  </div>
+</footer>
+
+<script>
+(function() {
+  const toggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  if (stored === 'light') {
+    html.setAttribute('data-theme', 'light');
+    toggle.textContent = 'Dark';
+  }
+  toggle.addEventListener('click', function() {
+    const isLight = html.getAttribute('data-theme') === 'light';
+    if (isLight) {
+      html.removeAttribute('data-theme');
+      toggle.textContent = 'Light';
+      localStorage.setItem('theme', 'dark');
+    } else {
+      html.setAttribute('data-theme', 'light');
+      toggle.textContent = 'Dark';
+      localStorage.setItem('theme', 'light');
+    }
+  });
+})();
+</script>
+</body>
+</html>
